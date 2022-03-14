@@ -13,7 +13,7 @@
 #include "skiplist.h"
 
 #define NUM_THREADS 1
-#define TEST_COUNT 1000000
+#define TEST_COUNT 100000
 SkipList<int, std::string> skipList(18);
 
 void *insertElement(void* threadid) {
@@ -42,36 +42,37 @@ void *getElement(void* threadid) {
 
 int main() {
     srand (time(NULL));  
-    // {
+    std::chrono::duration<double> insert_elapsed;
+    std::chrono::duration<double> get_elapsed;
+    {
 
-    //     pthread_t threads[NUM_THREADS];
-    //     int rc;
-    //     int i;
+        pthread_t threads[NUM_THREADS];
+        int rc;
+        int i;
 
-    //     auto start = std::chrono::high_resolution_clock::now();
+        auto start = std::chrono::high_resolution_clock::now();
 
-    //     for( i = 0; i < NUM_THREADS; i++ ) {
-    //         std::cout << "main() : creating thread, " << i << std::endl;
-    //         rc = pthread_create(&threads[i], NULL, insertElement, (void *)i);
+        for( i = 0; i < NUM_THREADS; i++ ) {
+            std::cout << "main() : creating thread, " << i << std::endl;
+            rc = pthread_create(&threads[i], NULL, insertElement, (void *)i);
 
-    //         if (rc) {
-    //             std::cout << "Error:unable to create thread," << rc << std::endl;
-    //             exit(-1);
-    //         }
-    //     }
+            if (rc) {
+                std::cout << "Error:unable to create thread," << rc << std::endl;
+                exit(-1);
+            }
+        }
 
-    //     void *ret;
-    //     for( i = 0; i < NUM_THREADS; i++ ) {
-    //         if (pthread_join(threads[i], &ret) !=0 )  {
-    //             perror("pthread_create() error"); 
-    //             exit(3);
-    //         }
-    //     }
-    //     auto finish = std::chrono::high_resolution_clock::now(); 
-    //     std::chrono::duration<double> elapsed = finish - start;
-    //     std::cout << "insert elapsed:" << elapsed.count() << std::endl;
-    // }
-    // skipList.displayList();
+        void *ret;
+        for( i = 0; i < NUM_THREADS; i++ ) {
+            if (pthread_join(threads[i], &ret) !=0 )  {
+                perror("pthread_create() error"); 
+                exit(3);
+            }
+        }
+        auto finish = std::chrono::high_resolution_clock::now(); 
+        insert_elapsed = finish - start;
+    }
+    // skipList.DisplayList();
 
     {
         pthread_t threads[NUM_THREADS];
@@ -98,10 +99,11 @@ int main() {
         }
 
         auto finish = std::chrono::high_resolution_clock::now(); 
-        std::chrono::duration<double> elapsed = finish - start;
-        std::cout << "get elapsed:" << elapsed.count() << std::endl;
+        get_elapsed = finish - start;
     }
 
+    std::cout << "insert elapsed:" << insert_elapsed.count() << std::endl;
+    std::cout << "get elapsed:" << get_elapsed.count() << std::endl;
 	pthread_exit(NULL);
     return 0;
 
